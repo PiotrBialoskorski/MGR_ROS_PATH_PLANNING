@@ -20,5 +20,19 @@ from mpl_toolkits.mplot3d import axes3d
 # test2 = np.array([1,3,4])
 # if test1.all() == test2.all():
 #     print('1')
-k = 0.75/0.05
-print(k)
+class tree_node:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.origin = None
+
+one = tree_node(2,3)
+two = tree_node(5,6)
+three = tree_node(7,8)
+two.origin = one
+three.origin = two
+print(f"1: {one.origin}, 2: {two.origin}, 3: {three.origin}")
+
+a = [1,2]
+
+print(a[-1])

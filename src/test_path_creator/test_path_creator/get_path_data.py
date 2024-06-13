@@ -62,6 +62,8 @@ class getPose(Node):
         if self.flagdata == 1:
             self.msg.data = self.data.data
             self.msg.resolution = self.data.resolution
+            self.msg.width = self.data.width
+            self.msg.height = self.data.height
         if ((self.flaggoal == 1) and (self.flaginit == 1) and (self.flagdata == 1)):
             self.publisher_.publish(self.msg)
             self.get_logger().info(f'publishing essential data')
