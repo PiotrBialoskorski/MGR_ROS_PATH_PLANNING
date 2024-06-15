@@ -16,6 +16,8 @@ class MapOccPub(Node):
         self.map = cv2.imread('/home/roslab/ros2_mgr/maps/map.pgm')
         self.data = [0]
         self.resolution = 0.
+        self.width = 0
+        self.height = 0
         self.publisher_ = self.create_publisher(MapOccData, '/test', 10)
         self.subscription = self.create_subscription(
             OccupancyGrid,
@@ -28,6 +30,8 @@ class MapOccPub(Node):
         self.get_logger().info(f"Map information received")
         self.data = map_info.data
         self.resolution = map_info.info.resolution
+        self.width = map_info.info.width
+        self.height = map_info.info.height
         self.sending()
 
     def sending(self):
@@ -39,6 +43,8 @@ class MapOccPub(Node):
         msg_test = MapOccData()
         msg_test.data = self.data
         msg_test.resolution = self.resolution
+        msg_test.width = self.width
+        msg_test.height = self.height
         self.publisher_.publish(msg_test)
         self.get_logger().info('Publishing Occupancy Grid')
 

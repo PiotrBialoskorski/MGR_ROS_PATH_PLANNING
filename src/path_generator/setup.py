@@ -23,6 +23,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            'RRT = path_generator.RRT_path:main'
         ],
     },
 )

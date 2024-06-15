@@ -6,7 +6,7 @@ import os
 
 def conversion(map1): #map1 sciezka do zdjecia wraz z roszerzeniem
     #Sciezka do map
-    map_loc_path = r'/home/roslab/mgr/maps/'
+    map_loc_path = r'/home/roslab/ros2_mgr/maps/'
     map = map_loc_path+map1
     #Wczytanie mapy
     map = cv2.imread(map)
