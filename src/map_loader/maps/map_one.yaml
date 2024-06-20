@@ -1,4 +1,4 @@
-image: map_one.pgm
+image: maptwo.pgm
 resolution: 0.05
 origin: [1.0, 1.0, 1.0]
 negate: 0

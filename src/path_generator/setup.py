@@ -23,7 +23,10 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'RRT = path_generator.RRT_path:main'
+            'RRT = path_generator.RRT_path:main',
+            'Voronoi = path_generator.Graph_methods:main',
+            'Vector_field = path_generator.Vector_field_algorithm:main',
+            'Dyfusion = path_generator.Dyfusion_algorithm:main',
         ],
     },
 )

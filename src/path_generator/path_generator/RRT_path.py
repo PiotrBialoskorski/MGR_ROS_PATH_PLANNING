@@ -5,6 +5,7 @@ from my_interfaces.msg import EssentialData
 from nav_msgs.msg import Path as pth
 from geometry_msgs.msg import PoseStamped
 from std_msgs.msg import Header
+
 import matplotlib.pyplot as plt
 import numpy as np
 import random
@@ -38,6 +39,7 @@ class RRT_path(Node):
         self.map_size = np.array([msg.width,msg.height])
         self.get_logger().info("Resolution, occupancy grid, initial and goal point received")
         self.grid_create()
+        # self.check_grid()
         self.path_generate()
         self.send_path()
 
@@ -111,7 +113,6 @@ class RRT_path(Node):
         path_msg.header.stamp = self.get_clock().now().to_msg()
         path_msg.header.frame_id = "map"
         path_poses = []
-        iter = 0
         for i in self.path:
             path_pose = PoseStamped()
             path_pose.pose.position.x = i.x
@@ -124,16 +125,16 @@ class RRT_path(Node):
         self.path_publisher.publish(path_msg)
         self.get_logger().info("Publishing path")
         
-    def check_grid(self):
-        x_check = []
-        y_check = []
-        for i in range(0, self.map_size[0]):
-            for j in range(0, self.map_size[1]):
-                if self.grid[j][i] == 0:
-                    x_check.append(i)
-                    y_check.append(j)
-        plt.scatter(x_check, y_check)
-        plt.show()
+    # def check_grid(self):
+    #     x_check = []
+    #     y_check = []
+    #     for i in range(0, self.map_size[0]):
+    #         for j in range(0, self.map_size[1]):
+    #             if self.grid[j][i] == 100:
+    #                 x_check.append(i)
+    #                 y_check.append(j)
+    #     # plt.scatter(x_check, y_check)
+    #     # plt.show()
         
                 
 def main(args=None):
