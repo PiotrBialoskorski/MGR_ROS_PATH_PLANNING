@@ -13,12 +13,11 @@ class MapOccPub(Node):
 
     def __init__(self):
         super().__init__('OccPub')
-        self.map = cv2.imread('/home/roslab/ros2_mgr/maps/map.pgm')
         self.data = [0]
         self.resolution = 0.
         self.width = 0
         self.height = 0
-        self.publisher_ = self.create_publisher(MapOccData, '/test', 10)
+        self.publisher_ = self.create_publisher(MapOccData, '/OccGrid', 10)
         self.subscription = self.create_subscription(
             OccupancyGrid,
             '/map',
@@ -39,7 +38,6 @@ class MapOccPub(Node):
         self.timer =self.create_timer(timer_period, self.send_msg)
         
     def send_msg(self):
-        #msg_info.data = self.Occ(self.map)
         msg_test = MapOccData()
         msg_test.data = self.data
         msg_test.resolution = self.resolution
