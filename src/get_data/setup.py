@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-package_name = 'map_pub'
+package_name = 'get_data'
 
 setup(
     name=package_name,
@@ -15,12 +15,14 @@ setup(
     zip_safe=True,
     maintainer='Piotr Bialoskorski',
     maintainer_email='bialoskorski.piotr23@gmail.com',
-    description='Forwarding the occupancy grid',
+    description='Combining all data for path generator',
     license='Apache-2.0',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'mappub = map_pub.map_occ_grid:main',
+            'GetGoal = get_data.get_goal:main',
+            'GetInitial = get_data.get_initial:main',
+            'GetData = get_data.get_path_data:main',
         ],
     },
 )

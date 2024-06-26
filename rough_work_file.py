@@ -5,38 +5,21 @@ import os
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import axes3d
 import math
+import scipy
 
-# img=cv2.imread('/home/roslab/mgr/maps/map.pgm')
-# img = np.asarray(img)
+# for i in [-1,0,1]:
+#     print(i)
 
-# #path_map = img
-# path_map = np.ones((np.shape(img)[0],np.shape(img)[1],np.shape(img)[2]))
-# path_map = path_map*255
-# print(np.shape(img))
-# print(np.shape(path_map))
-# # cv2.imshow("obraz", img)
-# # cv2.imshow("obraz2", path_map)
-# # k = cv2.waitKey(0)
-# test1 = np.array([1,2,3])
-# test2 = np.array([1,3,4])
-# if test1.all() == test2.all():
-#     print('1')
-# class tree_node:
-#     def __init__(self, x, y):
-#         self.x = x
-#         self.y = y
-#         self.origin = None
+# v =[0,1,2,3,4]
+# print(max(v)
+class lol():
+    def __init__(self,x,y):
+        self.x = x
+        self.y = y
 
-# one = tree_node(2,3)
-# two = tree_node(5,6)
-# three = tree_node(7,8)
-# two.origin = one
-# three.origin = two
-# print(f"1: {one.origin}, 2: {two.origin}, 3: {three.origin}")
-
-# a = [1,2]
-
-# print(a[-1])
-a = "banana"
-for i in reversed(a):
-    print(i)
+a = [0,1,2,3,4]
+i = 0
+while a != []:
+    print(a)
+    a.remove(i)
+    i = i + 1
