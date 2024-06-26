@@ -46,20 +46,6 @@ class MapOccPub(Node):
         self.publisher_.publish(msg_test)
         self.get_logger().info('Publishing Occupancy Grid')
 
-    
-    # def Occ(self,map):
-    #     sizex = np.shape(map)[0]
-    #     sizey = np.shape(map)[1]
-    #     data = []
-    #     for i in range(0, sizey):
-    #         for j in range(0, sizex):
-    #             if map[j,i,0] == 0:
-    #                 data.append(100)
-    #             else:
-    #                 data.append(0)
-    #     return data
-
-
 def main(args=None):
     rclpy.init(args=args)
 
