@@ -27,7 +27,7 @@ class getPose(Node):
         )
         self.subscription_data = self.create_subscription(
             MapOccData,
-            '/test',
+            '/OccGrid',
             self.data_callback,
             10
         )
