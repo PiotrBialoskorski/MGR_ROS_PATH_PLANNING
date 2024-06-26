@@ -16,17 +16,19 @@ setup(
     ],
     install_requires=['setuptools'],
     zip_safe=True,
-    maintainer='roslab',
+    maintainer='Piotr Bialoskorski',
     maintainer_email='bialoskorski.piotr23@gmail.com',
-    description='TODO: Package description',
+    description='Path generating algorithms',
     license='Apache-2.0',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
             'RRT = path_generator.RRT_path:main',
-            'Voronoi = path_generator.Graph_methods:main',
+            'Voronoi = path_generator.Voronoi_Graph:main',
             'Vector_field = path_generator.Vector_field_algorithm:main',
             'Dyfusion = path_generator.Dyfusion_algorithm:main',
+            'Vector_field_tangent = path_generator.Vector_field_tangent_algorithm:main',
+            'Visible = path_generator.Visibility_graph:main',
         ],
     },
 )

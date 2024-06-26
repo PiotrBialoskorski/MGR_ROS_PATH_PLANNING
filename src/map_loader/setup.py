@@ -16,9 +16,9 @@ setup(
     ],
     install_requires=['setuptools'],
     zip_safe=True,
-    maintainer='roslab',
-    maintainer_email='roslab@todo.todo',
-    description='TODO: Package description',
+    maintainer='Piotr Bialoskorski',
+    maintainer_email='bialoskorski.piotr23@gmail.com',
+    description='Publishing used map',
     license='Apache-2.0',
     tests_require=['pytest'],
     entry_points={

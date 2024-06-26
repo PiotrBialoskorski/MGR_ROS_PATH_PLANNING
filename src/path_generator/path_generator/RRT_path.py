@@ -39,7 +39,6 @@ class RRT_path(Node):
         self.map_size = np.array([msg.width,msg.height])
         self.get_logger().info("Resolution, occupancy grid, initial and goal point received")
         self.grid_create()
-        # self.check_grid()
         self.path_generate()
         self.send_path()
 

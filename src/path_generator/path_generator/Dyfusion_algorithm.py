@@ -31,50 +31,6 @@ class Dyf_algorithm(Node):
         self.grid = np.reshape(self.data, (self.map_size[1],self.map_size[0])) # grid looks like this grid[y][x]
         self.get_logger().info("Resolution, occupancy grid, initial and goal point received")
         self.Dyf_take_two()
-        # self.dyfusion()
-
-    # def dyfusion(self):
-    #     work_grid = self.new_grid()
-    #     initial = [int(self.initial_pose.y/self.resolution), int(self.initial_pose.x/self.resolution)]
-    #     goal = [int(self.goal_pose.y/self.resolution), int(self.goal_pose.x/self.resolution)]
-    #     mask = np.array([[math.sqrt(2), 1, math.sqrt(2)],[1, 0, 1],[math.sqrt(2), 1, math.sqrt(2)]])
-    #     work_grid[initial[0],initial[1]] = 0.1
-    #     pose = [initial[0], initial[1]]
-    #     last_pose = pose
-    #     counter = 0
-    #     # while work_grid[goal[0]][goal[1]] == 0:
-    #     for n in range(4):
-    #         for i in range(-1,2):
-    #             for j in range(-1,2):
-    #                 if work_grid[pose[0] + i, pose[1] + j] != None:
-    #                     if last_pose != [pose[0] + i, pose[1] + j]:
-    #                         if ((work_grid[pose[0] + i, pose[1] + j] == 0) or (work_grid[pose[0] + i, pose[1] + j] > work_grid[pose[0], pose[1]] + mask[1 + i, 1 + j])):
-    #                             work_grid[pose[0] + i, pose[1] + j] = work_grid[pose[0], pose[1]] + mask[1 + i, 1 + j]
-    #                             lowest_cell = work_grid[pose[0] + i, pose[1] + j]
-    #                             new_pose = [pose[0] + i, pose[1] + j]
-    #         for k in range(-1, 2):
-    #             for l in range(-1, 2):
-    #                 if work_grid[pose[0] + k, pose[1] + l] != None:
-    #                     if [last_pose[0], last_pose[1]] != [pose[0] + k, pose[1] + l]:
-    #                         print(last_pose, [pose[0]+k,pose[1]+l])
-    #                         if((k != 0) or (l != 0)):
-    #                             temp = work_grid[pose[0] + k, pose[1] + l]
-    #                             if temp < lowest_cell:
-    #                                 lowest_cell = temp
-    #                                 new_pose = [pose[0] + k, pose[1] + l]
-    #         last_pose = pose
-    #         pose = new_pose
-    #         print(last_pose, pose, lowest_cell)
-    #         if new_pose == goal:
-    #             break
-    #         # print(f"{counter}.huh")
-    #     print("wyszedlem z petli")
-    #     for i in range(-5,6):
-    #         test = []
-    #         for j in range(-5,6):
-    #             test.append(round(work_grid[initial[0]+i,initial[1]+j],3))
-    #         print(test)
-    #     # path = self.get_path(work_grid, goal)
 
     def Dyf_take_two(self):
         work_grid = self.new_grid()
@@ -115,7 +71,7 @@ class Dyf_algorithm(Node):
             path.append(new_pose)
         return path
     
-    def new_grid(self):
+    def new_grid(self): #Enlargening obstacles
         grid_dyf = np.ones((self.map_size[1], self.map_size[0]))
         grid_dyf = grid_dyf * np.inf
         for i in range(self.map_size[0]):

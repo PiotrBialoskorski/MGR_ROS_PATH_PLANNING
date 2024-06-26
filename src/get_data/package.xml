@@ -1,12 +1,13 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>test_path_creator</name>
+  <name>get_data</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
-  <maintainer email="roslab@todo.todo">roslab</maintainer>
+  <description>Combining all data for path generator</description>
+  <maintainer email="bialoskorski.piotr23@gmail.com">Piotr Bialoskorski</maintainer>
   <license>Apache-2.0</license>
 
+  <depend>nav_msgs</depend>
   <depend>nav2_msgs</depend>
   <depend>my_interfaces</depend>
   <depend>std_msgs</depend>
