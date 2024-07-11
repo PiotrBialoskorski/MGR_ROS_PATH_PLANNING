@@ -24,11 +24,13 @@ setup(
     entry_points={
         'console_scripts': [
             'RRT = path_generator.RRT_path:main',
-            'Voronoi = path_generator.Voronoi_Graph:main',
+            'Voronoi_Dijsktra = path_generator.Voronoi_Dijkstra:main',
+            'Voronoi_Astar = path_generator.Voronoi_A_star:main',
             'Vector_field = path_generator.Vector_field_algorithm:main',
             'Dyfusion = path_generator.Dyfusion_algorithm:main',
             'Vector_field_tangent = path_generator.Vector_field_tangent_algorithm:main',
-            'Visible = path_generator.Visibility_graph:main',
+            'Visible_Dijkstra = path_generator.Visibility_graph:main',
+            'Visible_A_star = path_generator.Visibility_A_star:main',
         ],
     },
 )

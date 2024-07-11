@@ -23,10 +23,10 @@ class arc():
     def __init__(self, vertice1, vertice2, len):
         self.vertices = [vertice1, vertice2]
         self.len = len
-
+        
 class visibility_graph_methods(Node):
     def __init__(self):
-        super().__init__("Visibility_Graph_Dijkstra_Algorithm")
+        super().__init__("Visibility_Graph_A_star_Algorithm")
         self.path_pub = self.create_publisher(pth, '/path', 10)
         self.data_sub = self.create_subscription(
             EssentialData,
@@ -44,7 +44,7 @@ class visibility_graph_methods(Node):
         self.map_size = np.array([msg.width, msg.height])
         self.grid = np.reshape(self.data, (self.map_size[1],self.map_size[0])) # grid looks like this grid[y][x]
         self.get_logger().info("Resolution, occupancy grid, initial and goal point received")
-        self.Dijkstra()
+        self.A_star()
 
     def Vis_graph(self):
         d = int(0.25/self.resolution)
@@ -100,7 +100,7 @@ class visibility_graph_methods(Node):
                         arcs.append(new_arc)
         return arcs,vertices
     
-    def Dijkstra(self):
+    def A_star(self):
         arcs, vertices = self.Vis_graph()
         vertices[0].value = 0 
         goal_vertice = vertices[-1]
@@ -119,14 +119,14 @@ class visibility_graph_methods(Node):
                 for ver in ar.vertices:
                     if ver != curr_ver:
                         if ver.value != 0:
-                            temp_val = curr_ver.value + ar.len
+                            temp_val = curr_ver.value + ar.len + self.Heurestic_function(ver, goal_vertice)
                             if temp_val < ver.value:
                                 ver.value = temp_val
                                 ver.parent = curr_ver
             iterator += 1
             if goal_vertice.value != np.inf:
                 break
-
+        
         print(f"Number of iterations: {iterator}")
         path = []
         active_ver = goal_vertice
@@ -136,6 +136,13 @@ class visibility_graph_methods(Node):
         
         self.send_path(path)
     
+    def Heurestic_function(self, current_ver, goal_ver):
+        x = goal_ver.x - current_ver.x
+        y = goal_ver.y - current_ver.y
+        vec = np.array([x,y])
+        vec_len = math.sqrt((vec[0])**2 + (vec[1])**2)
+        return vec_len
+
     def send_path(self, path):
         path_msg = pth()
         path_msg.header.stamp = self.get_clock().now().to_msg()
@@ -152,7 +159,7 @@ class visibility_graph_methods(Node):
         path_msg.poses = path_poses
         self.path_pub.publish(path_msg)
         self.get_logger().info("Publishing path")
-        
+
 def main(args=None):
     rclpy.init(args=args)
 

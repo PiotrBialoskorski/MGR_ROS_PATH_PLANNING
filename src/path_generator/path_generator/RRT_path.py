@@ -123,19 +123,7 @@ class RRT_path(Node):
         path_msg.poses = path_poses
         self.path_publisher.publish(path_msg)
         self.get_logger().info("Publishing path")
-        
-    # def check_grid(self):
-    #     x_check = []
-    #     y_check = []
-    #     for i in range(0, self.map_size[0]):
-    #         for j in range(0, self.map_size[1]):
-    #             if self.grid[j][i] == 100:
-    #                 x_check.append(i)
-    #                 y_check.append(j)
-    #     # plt.scatter(x_check, y_check)
-    #     # plt.show()
-        
-                
+                     
 def main(args=None):
     rclpy.init(args=args)
 
