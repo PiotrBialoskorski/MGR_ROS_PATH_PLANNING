@@ -16,9 +16,10 @@ class tree_vertex:
         self.x = x
         self.y = y
         self.z = 0.0
+        self.cost = 0
         self.origin = None
 
-class RRT_path(Node):
+class RRT_star(Node):
     
     def __init__(self):
         super().__init__("Rapid_Random_Tree")
@@ -48,22 +49,40 @@ class RRT_path(Node):
     def path_generate(self):
         self.dD = 0.5 # [m]
         i = 0
+        R = self.dD * 3.5
+        self.rand_tree = []
         self.init_vertex = tree_vertex(self.initial.x, self.initial.y)
         self.goal_vertex = tree_vertex(self.goal.x, self.goal.y)
         self.tree_vertexes = [self.init_vertex]
         while i <= 10000:
             rand_vertex = self.random_vertex()
+            self.rand_tree.append(rand_vertex)
             closest_vertex = self.closest_vertex(rand_vertex)
             new_vertex = self.create_vertex(closest_vertex)
             if self.link_check(closest_vertex, new_vertex) == 0:
+                neigh = self.find_neigh(self.tree_vertexes,closest_vertex)
+                for node in neigh:
+                    if node.cost < closest_vertex.cost + self.dD:
+                        closest_vertex = node
+                cost = math.sqrt((new_vertex.x - closest_vertex.x)**2 + (new_vertex.y - closest_vertex.y)**2)
                 self.tree_vertexes.append(new_vertex)
-                i = i + 1
+                new_vertex.origin = closest_vertex
+                new_vertex.cost = cost + new_vertex.origin.cost
+                for node in neigh:
+                    dist = math.sqrt((node.x - new_vertex.x)**2 + (node.y - new_vertex.y)**2)
+                    if self.link_check(node, new_vertex) == 0:
+                        if new_vertex.cost + dist < node.cost:
+                            node.origin = new_vertex
                 if math.sqrt((new_vertex.x - self.goal_vertex.x)**2 + (new_vertex.y - self.goal_vertex.y)**2) <= self.dD:
                     self.goal_vertex.origin = new_vertex
                     self.tree_vertexes.append(self.goal_vertex)
                     break
+                i = i + 1
+        for node in self.tree_vertexes:
+            if node.origin == None:
+                print("parentless")
         self.path = self.get_path(self.tree_vertexes)
-    
+
     def random_vertex(self):
         return tree_vertex(random.random()*(self.map_size[0] - 1)*self.resolution,random.random()*(self.map_size[1] - 1)*self.resolution)
     
@@ -85,6 +104,15 @@ class RRT_path(Node):
         new_temp.origin = nearest_vertex
         return new_temp
     
+    def find_neigh(self, tree, nearest_ver):
+        R = self.dD * 4.
+        neigh = []
+        for node in tree:
+            dist = math.sqrt((node.x - nearest_ver.x)**2 + (node.y - nearest_ver.y)**2)
+            if dist <= R:
+                neigh.append(node)
+        return neigh
+
     def link_check(self, nearest_vertex, new_vertex):
         nearest_vertex_pix = [int(nearest_vertex.x/self.resolution), int(nearest_vertex.y/self.resolution)]
         new_vertex_pix = [int(new_vertex.x/self.resolution), int(new_vertex.y/self.resolution)]
@@ -121,13 +149,11 @@ class RRT_path(Node):
         path_msg.poses = path_poses
         self.path_publisher.publish(path_msg)
         self.get_logger().info("Publishing path")
-
-        
-                
+                     
 def main(args=None):
     rclpy.init(args=args)
 
-    RRT_PATH = RRT_path()
+    RRT_PATH = RRT_star()
 
     rclpy.spin(RRT_PATH)
     
