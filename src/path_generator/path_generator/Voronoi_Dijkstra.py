@@ -11,6 +11,24 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 import cv2
+import time
+import os
+import psutil
+
+def process_memory():
+    process = psutil.Process(os.getpid())
+    mem_info = process.memory_info()
+    return mem_info.rss
+
+def profile(main):
+    def wrapper(*args, **kwargs):
+        mem_before = process_memory()
+        result = main(*args, **kwargs)
+        mem_after = process_memory()
+        print("{}: consumed memory: {:,}".format(main.__name__, mem_before, mem_after - mem_before))
+
+        return result
+    return wrapper
 
 class vertice():
     def __init__(self, x, y):
@@ -47,7 +65,8 @@ class Dijkstra(Node):
         self.map_size = [msg.width, msg.height]
         self.grid = np.reshape(self.data, (self.map_size[1], self.map_size[0]))
         self.get_logger().info("Resolution, occupancy grid, initial and goal point received") 
-        self.Dijkstra()
+        vertices = self.voronoi_diagram()
+        self.Dijkstra(vertices)
 
     def voronoi_diagram(self):
         walls = []
@@ -58,8 +77,9 @@ class Dijkstra(Node):
                 if self.grid[j][i] != 0:
                     for k in range(-1,2):
                         for l in range(-1,2):
-                            if self.grid[j+k][i+l] !=0:
-                                black += 1
+                            if 0 < j + k < self.map_size[1] and 0 < i + l < self.map_size[0]:    
+                                if self.grid[j+k][i+l] !=0:
+                                    black += 1
                     if black < 8:
                         walls.append([i,j])
         
@@ -67,7 +87,7 @@ class Dijkstra(Node):
         voronoi = Voronoi(walls)
         for vert in voronoi.vertices:
             if 0 < vert[0] < self.map_size[0] and 0 < vert[1] < self.map_size[1]:
-                if self.grid[int(vert[1])][int(vert[0])] != 100:
+                if self.grid[int(vert[1])][int(vert[0])] == 0:
                     node = vertice(vert[0], vert[1])
                     node.id = numerator
                     graph_vertecies.append(node)
@@ -121,12 +141,11 @@ class Dijkstra(Node):
     
         return graph_vertecies
     
-    def Dijkstra(self):
-        vertices = self.voronoi_diagram()
+    @profile
+    def Dijkstra(self, vertices):
+        start = time.time()
         vertices[0].value = 0 
         goal_vertice = vertices[-1]
-        for node in vertices:
-            print(f"WSP: ({node.x}, {node.y}), luki: {node.arcs}, val: {node.value}\\")
         Q = vertices
         Used = []
         iterator = 0
@@ -136,7 +155,7 @@ class Dijkstra(Node):
                 if i.value < Q_val and i not in Used:
                     curr_ver = i
                     Q_val = i.value
-            #Q.remove(curr_ver)
+            Q.remove(curr_ver)
             Used.append(curr_ver)
             for ar in curr_ver.arcs:
                 for ver in ar.vertices:
@@ -158,6 +177,8 @@ class Dijkstra(Node):
             active_ver = active_ver.parent
         
         self.send_path(path)
+        end = time.time()
+        print(f"time of just algorithm: {end - start}")
     
     def send_path(self, path):
         path_msg = pth()
@@ -176,13 +197,14 @@ class Dijkstra(Node):
         self.path_pub.publish(path_msg)
         self.get_logger().info("Publishing path")
 
+
 def main(args=None):
     rclpy.init(args=args)
 
     Graph = Dijkstra()
 
-    rclpy.spin(Graph)
-    
+    rclpy.spin_once(Graph)
+
     Graph.destroy_node()
     rclpy.shutdown()
 

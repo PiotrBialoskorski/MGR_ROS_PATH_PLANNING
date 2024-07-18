@@ -32,6 +32,7 @@ setup(
             'Vector_field_tangent = path_generator.Vector_field_tangent_algorithm:main',
             'Visible_Dijkstra = path_generator.Visibility_Dijkstra:main',
             'Visible_A_star = path_generator.Visibility_A_star:main',
+            'pth_len = path_generator.path_len:main',
         ],
     },
 )

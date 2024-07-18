@@ -9,6 +9,24 @@ from std_msgs.msg import Header
 import matplotlib.pyplot as plt
 import numpy as np
 import math
+import time
+import os
+import psutil
+
+def process_memory():
+    process = psutil.Process(os.getpid())
+    mem_info = process.memory_info()
+    return mem_info.rss
+
+def profile(main):
+    def wrapper(*args, **kwargs):
+        mem_before = process_memory()
+        result = main(*args, **kwargs)
+        mem_after = process_memory()
+        print("{}: consumed memory: {:,}".format(main.__name__, mem_before, mem_after - mem_before))
+
+        return result
+    return wrapper
 
 class Vec_algorithm(Node):
     def __init__(self):
@@ -30,13 +48,17 @@ class Vec_algorithm(Node):
         self.map_size = np.array([msg.width, msg.height])
         self.grid = np.reshape(self.data, (self.map_size[1],self.map_size[0])) # grid[y][x] 
         self.get_logger().info("Resolution, occupancy grid, initial and goal point received")
+        start = time.time()
         self.Vector_field_path()
+        end = time.time()
+        print(f"time of just algorithm: {end - start}")
 
+    @profile
     def Vector_field_path(self):
         path = [np.array([self.initial_pose.y, self.initial_pose.x])]
         goal = np.array([self.goal_pose.y, self.goal_pose.x])
-        D = 1.
-        norm = 0.15
+        D = 20 * self.resolution
+        norm = 3 * self.resolution
         res = math.sqrt((path[0][0] - goal[0])**2 + (path[0][1] - goal[1])**2)
         new_pose = path[0]
         k = 0
@@ -55,9 +77,9 @@ class Vec_algorithm(Node):
                         temp_dist = math.sqrt((new_pose[0] - (iter_y + i)*self.resolution)**2 + (new_pose[1] - (iter_x + j)*self.resolution)**2)
                         if temp_dist <= D:
                             repel = new_pose - np.array([(iter_y + i) * self.resolution, (iter_x + j) * self.resolution])
-                            repel_scale = (0.1 / dist) * ((1.0/temp_dist - 1.0 /D)**2)
+                            repel_scale = (0.1 / dist) * ((1.0/temp_dist - 1.0 /D)**2) * norm
                             repel_vec = repel_vec + repel * repel_scale
-            if (((-0.001 <= vec[0] + repel_vec[0] <= 0.001) and (-0.001 <= vec[1] + repel_vec[1] <= 0.001)) or math.sqrt(repel_vec[0]**2 + repel_vec[1]**2) > 10):
+            if (((-0.00001 <= vec[0] + repel_vec[0] <= 0.00001) and (-0.001 <= vec[1] + repel_vec[1] <= 0.00001)) or math.sqrt(repel_vec[0]**2 + repel_vec[1]**2) > 10):
                 print("Stuck in local minimum")
                 break
             new_pose = new_pose + vec + repel_vec
@@ -66,6 +88,7 @@ class Vec_algorithm(Node):
             if(k >= 10000):
                 break
             k = k + 1      
+        print(f"iterations: {k}")
         self.send_path(path)
     
     def send_path(self, path):
@@ -85,12 +108,15 @@ class Vec_algorithm(Node):
         self.path_publisher.publish(path_msg)
         self.get_logger().info("Publishing path")
 
+
+
 def main(args=None):
     rclpy.init(args=args)
 
     Vec_algs = Vec_algorithm()
 
-    rclpy.spin(Vec_algs)
+    rclpy.spin_once(Vec_algs)
+
 
     Vec_algs.destroy_node()
     rclpy.shutdown()

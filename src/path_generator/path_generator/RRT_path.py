@@ -10,7 +10,25 @@ import matplotlib.pyplot as plt
 import numpy as np
 import random
 import math
+import time
+import os
+import psutil
 
+def process_memory():
+    process = psutil.Process(os.getpid())
+    mem_info = process.memory_info()
+    return mem_info.rss
+
+def profile(main):
+    def wrapper(*args, **kwargs):
+        mem_before = process_memory()
+        result = main(*args, **kwargs)
+        mem_after = process_memory()
+        print("{}: consumed memory: {:,}".format(main.__name__, mem_before, mem_after - mem_before))
+
+        return result
+    return wrapper
+ 
 class tree_vertex:
     def __init__(self, x, y):
         self.x = x
@@ -39,14 +57,17 @@ class RRT_path(Node):
         self.map_size = np.array([msg.width,msg.height])
         self.get_logger().info("Resolution, occupancy grid, initial and goal point received")
         self.grid_create()
+        start = time.time()
         self.path_generate()
-        self.send_path()
+        end = time.time()
+        print(f"time of just algorithm: {end - start}")
 
     def grid_create(self):
         self.grid = np.reshape(self.data, (self.map_size[1],self.map_size[0])) # grid looks like this grid[y][x]
 
+    @profile
     def path_generate(self):
-        self.dD = 0.5 # [m]
+        self.dD = 10 * self.resolution # [m]
         i = 0
         self.init_vertex = tree_vertex(self.initial.x, self.initial.y)
         self.goal_vertex = tree_vertex(self.goal.x, self.goal.y)
@@ -57,12 +78,15 @@ class RRT_path(Node):
             new_vertex = self.create_vertex(closest_vertex)
             if self.link_check(closest_vertex, new_vertex) == 0:
                 self.tree_vertexes.append(new_vertex)
-                i = i + 1
                 if math.sqrt((new_vertex.x - self.goal_vertex.x)**2 + (new_vertex.y - self.goal_vertex.y)**2) <= self.dD:
                     self.goal_vertex.origin = new_vertex
                     self.tree_vertexes.append(self.goal_vertex)
                     break
+            i = i + 1
         self.path = self.get_path(self.tree_vertexes)
+        self.send_path()
+
+        print(f"iterations: {i}")
     
     def random_vertex(self):
         return tree_vertex(random.random()*(self.map_size[0] - 1)*self.resolution,random.random()*(self.map_size[1] - 1)*self.resolution)
@@ -122,15 +146,15 @@ class RRT_path(Node):
         self.path_publisher.publish(path_msg)
         self.get_logger().info("Publishing path")
 
-        
+   
                 
 def main(args=None):
     rclpy.init(args=args)
 
     RRT_PATH = RRT_path()
 
-    rclpy.spin(RRT_PATH)
-    
+    rclpy.spin_once(RRT_PATH)
+
     RRT_PATH.destroy_node()
     rclpy.shutdown()
 

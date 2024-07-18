@@ -10,6 +10,24 @@ import matplotlib.pyplot as plt
 import numpy as np
 import math
 import cv2
+import time
+import os
+import psutil
+
+def process_memory():
+    process = psutil.Process(os.getpid())
+    mem_info = process.memory_info()
+    return mem_info.rss
+
+def profile(main):
+    def wrapper(*args, **kwargs):
+        mem_before = process_memory()
+        result = main(*args, **kwargs)
+        mem_after = process_memory()
+        print("{}: consumed memory: {:,}".format(main.__name__, mem_before, mem_after - mem_before))
+
+        return result
+    return wrapper
 
 class vertice():
     def __init__(self, x, y):
@@ -44,18 +62,19 @@ class visibility_graph_methods(Node):
         self.map_size = np.array([msg.width, msg.height])
         self.grid = np.reshape(self.data, (self.map_size[1],self.map_size[0])) # grid looks like this grid[y][x]
         self.get_logger().info("Resolution, occupancy grid, initial and goal point received")
-        self.Dijkstra()
+        arcs,vertices = self.Vis_graph()
+        self.Dijkstra(arcs, vertices)
 
     def Vis_graph(self):
         d = int(0.25/self.resolution)
         temp_grid = self.grid
         temp_grid[temp_grid == 100] = 255
         temp_grid[temp_grid == 0] = 0
-        temp_grid[temp_grid == -1] = 127
+        temp_grid[temp_grid == -1] = 255
         kernel = np.ones((2 * d + 1,2 * d + 1),np.uint8)
         temp_grid = np.array(temp_grid, dtype = np.uint8)
         temp_grid_dilated = cv2.dilate(temp_grid, kernel, iterations = 1)
-        corners = cv2.goodFeaturesToTrack(temp_grid_dilated, 50, 0.01, 10)
+        corners = cv2.goodFeaturesToTrack(temp_grid_dilated, 300, 0.01, 10)
         corners = np.int0(corners)
         cor = []
         cor.append([int(self.initial_pose.x/self.resolution), int(self.initial_pose.y/self.resolution)])
@@ -100,8 +119,9 @@ class visibility_graph_methods(Node):
                         arcs.append(new_arc)
         return arcs,vertices
     
-    def Dijkstra(self):
-        arcs, vertices = self.Vis_graph()
+    @profile
+    def Dijkstra(self, arcs, vertices):
+        start = time.time()
         vertices[0].value = 0 
         goal_vertice = vertices[-1]
         Q = vertices
@@ -135,6 +155,8 @@ class visibility_graph_methods(Node):
             active_ver = active_ver.parent
         
         self.send_path(path)
+        end = time.time()
+        print(f"time of just algorithm: {end - start}")
     
     def send_path(self, path):
         path_msg = pth()
@@ -152,13 +174,15 @@ class visibility_graph_methods(Node):
         path_msg.poses = path_poses
         self.path_pub.publish(path_msg)
         self.get_logger().info("Publishing path")
-        
+
+
+
 def main(args=None):
     rclpy.init(args=args)
 
     Vis_Graph_meth = visibility_graph_methods()
     
-    rclpy.spin(Vis_Graph_meth)
+    rclpy.spin_once(Vis_Graph_meth)
 
     Vis_Graph_meth.destroy_node()
     rclpy.shutdown()

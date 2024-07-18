@@ -11,6 +11,24 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 import cv2
+import time
+import os
+import psutil
+
+def process_memory():
+    process = psutil.Process(os.getpid())
+    mem_info = process.memory_info()
+    return mem_info.rss
+
+def profile(main):
+    def wrapper(*args, **kwargs):
+        mem_before = process_memory()
+        result = main(*args, **kwargs)
+        mem_after = process_memory()
+        print("{}: consumed memory: {:,}".format(main.__name__, mem_before, mem_after - mem_before))
+
+        return result
+    return wrapper
 
 class vertice():
     def __init__(self, x, y):
@@ -46,7 +64,8 @@ class Astar(Node):
         self.map_size = [msg.width, msg.height]
         self.grid = np.reshape(self.data, (self.map_size[1], self.map_size[0]))
         self.get_logger().info("Resolution, occupancy grid, initial and goal point received") 
-        self.A_star()
+        vertices = self.voronoi_diagram()
+        self.A_star(vertices)
 
     def voronoi_diagram(self):
         walls = []
@@ -57,8 +76,9 @@ class Astar(Node):
                 if self.grid[j][i] != 0:
                     for k in range(-1,2):
                         for l in range(-1,2):
-                            if self.grid[j+k][i+l] !=0:
-                                black += 1
+                            if 0 < j + k < self.map_size[1] and 0 < i + l < self.map_size[0]:  
+                                if self.grid[j+k][i+l] !=0:
+                                    black += 1
                     if black < 8:
                         walls.append([i,j])
         
@@ -66,7 +86,7 @@ class Astar(Node):
         voronoi = Voronoi(walls)
         for vert in voronoi.vertices:
             if 0 < vert[0] < self.map_size[0] and 0 < vert[1] < self.map_size[1]:
-                if self.grid[int(vert[1])][int(vert[0])] != 100:
+                if self.grid[int(vert[1])][int(vert[0])] == 0:
                     node = vertice(vert[0], vert[1])
                     node.id = numerator
                     graph_vertecies.append(node)
@@ -120,8 +140,9 @@ class Astar(Node):
     
         return graph_vertecies
     
-    def A_star(self):
-        vertices = self.voronoi_diagram()
+    @profile
+    def A_star(self, vertices):
+        start = time.time()
         vertices[0].value = 0 
         goal_vertice = vertices[-1]
         Q = vertices
@@ -155,6 +176,8 @@ class Astar(Node):
             active_ver = active_ver.parent
         
         self.send_path(path)
+        end = time.time()
+        print(f"time of just algorithm: {end - start}")
     
     def Heurestic_function(self, current_ver, goal_ver):
         x = goal_ver.x - current_ver.x
@@ -185,8 +208,9 @@ def main(args=None):
 
     Graph = Astar()
 
-    rclpy.spin(Graph)
+    rclpy.spin_once(Graph)
     
+
     Graph.destroy_node()
     rclpy.shutdown()
 

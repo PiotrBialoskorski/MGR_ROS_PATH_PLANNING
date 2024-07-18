@@ -10,6 +10,24 @@ import matplotlib.pyplot as plt
 import numpy as np
 import random
 import math
+import time
+import os
+import psutil
+
+def process_memory():
+    process = psutil.Process(os.getpid())
+    mem_info = process.memory_info()
+    return mem_info.rss
+
+def profile(main):
+    def wrapper(*args, **kwargs):
+        mem_before = process_memory()
+        result = main(*args, **kwargs)
+        mem_after = process_memory()
+        print("{}: consumed memory: {:,}".format(main.__name__, mem_before, mem_after - mem_before))
+
+        return result
+    return wrapper
 
 class tree_vertex:
     def __init__(self, x, y):
@@ -40,16 +58,19 @@ class RRT_star(Node):
         self.map_size = np.array([msg.width,msg.height])
         self.get_logger().info("Resolution, occupancy grid, initial and goal point received")
         self.grid_create()
+        start = time.time()
         self.path_generate()
-        self.send_path()
+        end = time.time()
+        print(f"time of just algorithm: {end - start}")
 
     def grid_create(self):
         self.grid = np.reshape(self.data, (self.map_size[1],self.map_size[0])) # grid looks like this grid[y][x]
 
+    @profile
     def path_generate(self):
-        self.dD = 0.5 # [m]
+        self.dD = 10 * self.resolution # [m]
         i = 0
-        R = self.dD * 3.5
+        R = self.dD * 4
         self.rand_tree = []
         self.init_vertex = tree_vertex(self.initial.x, self.initial.y)
         self.goal_vertex = tree_vertex(self.goal.x, self.goal.y)
@@ -62,8 +83,9 @@ class RRT_star(Node):
             if self.link_check(closest_vertex, new_vertex) == 0:
                 neigh = self.find_neigh(self.tree_vertexes,closest_vertex)
                 for node in neigh:
-                    if node.cost < closest_vertex.cost + self.dD:
-                        closest_vertex = node
+                    if self.link_check(node, new_vertex) == 0:    
+                        if node.cost < closest_vertex.cost + self.dD:
+                            closest_vertex = node
                 cost = math.sqrt((new_vertex.x - closest_vertex.x)**2 + (new_vertex.y - closest_vertex.y)**2)
                 self.tree_vertexes.append(new_vertex)
                 new_vertex.origin = closest_vertex
@@ -77,11 +99,10 @@ class RRT_star(Node):
                     self.goal_vertex.origin = new_vertex
                     self.tree_vertexes.append(self.goal_vertex)
                     break
-                i = i + 1
-        for node in self.tree_vertexes:
-            if node.origin == None:
-                print("parentless")
+            i = i + 1
+        print(f"iterations: {i}")
         self.path = self.get_path(self.tree_vertexes)
+        self.send_path()
 
     def random_vertex(self):
         return tree_vertex(random.random()*(self.map_size[0] - 1)*self.resolution,random.random()*(self.map_size[1] - 1)*self.resolution)
@@ -149,14 +170,16 @@ class RRT_star(Node):
         path_msg.poses = path_poses
         self.path_publisher.publish(path_msg)
         self.get_logger().info("Publishing path")
-                     
+
+
+
+
 def main(args=None):
     rclpy.init(args=args)
-
     RRT_PATH = RRT_star()
 
-    rclpy.spin(RRT_PATH)
-    
+    rclpy.spin_once(RRT_PATH)
+
     RRT_PATH.destroy_node()
     rclpy.shutdown()
 

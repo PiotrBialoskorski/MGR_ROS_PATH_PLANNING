@@ -13,6 +13,7 @@ def conversion(map1): #map1 sciezka do zdjecia wraz z roszerzeniem
     #konwersja do skali szarosci
     gray_map = cv2.cvtColor(map,cv2.COLOR_BGR2GRAY)
     #zapis mapy jako pgm
+    ret, gray_map = cv2.threshold(gray_map, 100, 255, cv2.THRESH_BINARY)
     pgm_map = map1.replace(".png", ".pgm")
     os.chdir(map_loc_path)
     cv2.imwrite(pgm_map, gray_map)
