@@ -1,5 +1,5 @@
 image: map_three.pgm
-resolution: 0.011 #0.011 map3
+resolution: 0.011 #0.011 map3, 0.05 map1 and map2
 origin: [0.0, 0.0, 0.0]
 negate: 0
 occupied_thresh: 0.65

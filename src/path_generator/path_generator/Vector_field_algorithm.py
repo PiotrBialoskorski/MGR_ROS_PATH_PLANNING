@@ -85,7 +85,7 @@ class Vec_algorithm(Node):
             new_pose = new_pose + vec + repel_vec
             path.append(new_pose)
             res = vec_norm
-            if(k >= 10000):
+            if(k >= 25000):
                 break
             k = k + 1      
         print(f"iterations: {k}")

@@ -74,7 +74,7 @@ class visibility_graph_methods(Node):
         kernel = np.ones((2 * d + 1,2 * d + 1),np.uint8)
         temp_grid = np.array(temp_grid, dtype = np.uint8)
         temp_grid_dilated = cv2.dilate(temp_grid, kernel, iterations = 1)
-        corners = cv2.goodFeaturesToTrack(temp_grid_dilated, 300, 0.01, 10)
+        corners = cv2.goodFeaturesToTrack(temp_grid_dilated, 500, 0.01, 8)
         corners = np.int0(corners)
         cor = []
         cor.append([int(self.initial_pose.x/self.resolution), int(self.initial_pose.y/self.resolution)])
